@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Obsazenost sauny</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 900px; margin: 40px auto; }
+  </style>
+</head>
+<body>
+
+<h2>Obsazenost sauny</h2>
+<canvas id="chart"></canvas>
+
+<script>
+const CSV_URL = "SEM_DOSAD_SVOJI_CSV_URL";
+
+fetch(CSV_URL)
+  .then(r => r.text())
+  .then(csv => {
+    const rows = csv.trim().split("\n").slice(1);
+    const labels = [];
+    const data = [];
+
+    rows.forEach(r => {
+      const [ts, occ] = r.split(",");
+      if (ts && occ) {
+        labels.push(ts);
+        data.push(Number(occ));
+      }
+    });
+
+    new Chart(document.getElementById("chart"), {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label: "Počet lidí",
+          data: data,
+          borderWidth: 2,
+          tension: 0.3
+        }]
+      },
+      options: {
+        scales: {
+          y: { min: 0, max: 30 }
+        }
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
+
+
