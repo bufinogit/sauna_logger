@@ -1,5 +1,6 @@
 import requests
 import re
+from zoneinfo import ZoneInfo
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone
 import gspread
@@ -39,9 +40,9 @@ else:
         occupancy = "N/A"
 
 # === LOGOVÁNÍ DO SHEET ===
-timestamp = datetime.now(timezone.utc).isoformat()
 
 try:
+    timestamp = datetime.now(ZoneInfo("Europe/Prague")).isoformat()
     sheet.append_row([timestamp, occupancy])
     print(f"Zapsáno: {timestamp} | {occupancy}")
 except Exception as e:
