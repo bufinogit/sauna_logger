@@ -1,0 +1,31 @@
+name: Sauna Logger
+
+# spouštění každých 10 minut a možnost manuálního spuštění
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 gspread google-auth
+
+      - name: Run scraper
+        env:
+          GOOGLE_CREDS: ${{ secrets.GOOGLE_CREDS }}
+        run: |
+          # vytvoření credentials.json z GitHub Secrets
+          echo "$GOOGLE_CREDS" > credentials.json
+          python sauna_skrypt.py
