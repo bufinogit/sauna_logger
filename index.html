@@ -26,7 +26,7 @@ async function loadCSV() {
 
   for (const row of rows) {
     const cols = row.split(",");
-    labels.push(cols[5]);      // time_HH_MM
+    labels.push(cols[6]);      // time_HH_MM
     values.push(Number(cols[1])); // occupancy
   }
 
