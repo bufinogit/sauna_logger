@@ -14,44 +14,43 @@
 <canvas id="chart"></canvas>
 
 <script>
-const CSV_URL = "SEM_DOSAD_SVOJI_CSV_URL";
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTSROGuvLLP0EUzAKIGZm5cgk_amvP5YmS5AR4azjF9aRVfA4fJ4ghZCGGhIZI76HiJV69sb0Cb32Yb/pub?gid=0&single=true&output=csv";
 
-fetch(CSV_URL)
-  .then(r => r.text())
-  .then(csv => {
-    const rows = csv.trim().split("\n").slice(1);
-    const labels = [];
-    const data = [];
+async function loadCSV() {
+  const res = await fetch(CSV_URL);
+  const text = await res.text();
 
-    rows.forEach(r => {
-      const [ts, occ] = r.split(",");
-      if (ts && occ) {
-        labels.push(ts);
-        data.push(Number(occ));
+  const rows = text.trim().split("\n").slice(1);
+  const labels = [];
+  const values = [];
+
+  for (const row of rows) {
+    const cols = row.split(",");
+    labels.push(cols[5]);      // time_HH_MM
+    values.push(Number(cols[1])); // occupancy
+  }
+
+  new Chart(document.getElementById("chart"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Obsazenost",
+        data: values,
+        borderColor: "#007bff",
+        tension: 0.3
+      }]
+    },
+    options: {
+      scales: {
+        y: { min: 0, max: 30 }
       }
-    });
-
-    new Chart(document.getElementById("chart"), {
-      type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label: "Počet lidí",
-          data: data,
-          borderWidth: 2,
-          tension: 0.3
-        }]
-      },
-      options: {
-        scales: {
-          y: { min: 0, max: 30 }
-        }
-      }
-    });
+    }
   });
+}
+
+loadCSV();
 </script>
 
 </body>
 </html>
-
-
