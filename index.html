@@ -31,18 +31,28 @@ async function loadCSV() {
   }
 
   new Chart(document.getElementById("chart"), {
-    type: "line",
-    data: {
-      labels,
-      datasets: [{
-        label: "Obsazenost",
-        data: values,
-        borderColor: "#007bff",
-        tension: 0.3
-      }]
-    },
+  type: "line",
+  data: {
+    labels,
+    datasets: [{
+      label: "Obsazenost",
+      data: values,
+      tension: 0.3
+    }]
+  },
     options: {
       scales: {
+        x: {
+          type: "time",
+          time: {
+            unit: "minute",
+            displayFormats: {
+              minute: "HH:mm"
+            }
+          },
+        min: "2026-01-11T09:00:00+01:00",
+        max: "2026-01-11T21:00:00+01:00"
+      },
         y: { min: 0, max: 30 }
       }
     }
