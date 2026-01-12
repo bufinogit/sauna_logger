@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Obsazenost sauny</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
   <style>
     body { font-family: sans-serif; max-width: 900px; margin: 40px auto; }
   </style>
@@ -26,7 +27,7 @@ async function loadCSV() {
 
   for (const row of rows) {
     const cols = row.split(",");
-    labels.push(cols[6]);      // time_HH_MM
+    labels.push(cols[1]);      // time_HH_MM
     values.push(Number(cols[1])); // occupancy
   }
 
