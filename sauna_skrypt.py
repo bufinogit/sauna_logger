@@ -2,13 +2,13 @@ import requests
 import re
 from zoneinfo import ZoneInfo
 from bs4 import BeautifulSoup
-from datetime import datetime, timezone
+from datetime import datetime
 import gspread
 from google.oauth2.service_account import Credentials
 
 # === KONFIGURACE ===
-URL = "https://www.bazenslovany.cz/"   # <-- Změň na URL stránky s obsazeností
-SHEET_ID = "1hDuxto3fA3aVnxe9I6RXigix-L-UnV0j14NKEEL-ntc"  # <-- jen ID
+URL = "https://www.bazenslovany.cz/"   # URL stránky s obsazeností
+SHEET_ID = "1hDuxto3fA3aVnxe9I6RXigix-L-UnV0j14NKEEL-ntc"  # ID
 
 # === GOOGLE SHEETS AUTH ===
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]

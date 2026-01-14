@@ -12,7 +12,13 @@
 <body>
 
 <h2>Obsazenost sauny</h2>
-<canvas id="chart"></canvas>
+<h3>Pondělí</h3><canvas id="mon"></canvas>
+<h3>Úterý</h3><canvas id="tue"></canvas>
+<h3>Středa</h3><canvas id="wed"></canvas>
+<h3>Čtvrtek</h3><canvas id="thu"></canvas>
+<h3>Pátek</h3><canvas id="fri"></canvas>
+<h3>Sobota</h3><canvas id="sat"></canvas>
+<h3>Neděle</h3><canvas id="sun"></canvas>
 
 <script>
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTSROGuvLLP0EUzAKIGZm5cgk_amvP5YmS5AR4azjF9aRVfA4fJ4ghZCGGhIZI76HiJV69sb0Cb32Yb/pub?gid=0&single=true&output=csv";
@@ -27,37 +33,65 @@ async function loadCSV() {
 
   for (const row of rows) {
     const cols = row.split(",");
-    labels.push(cols[0]);      // time_HH_MM
+    labels.push(cols[0]);      // time_ISO
     values.push(Number(cols[1])); // occupancy
   }
 
-  new Chart(document.getElementById("chart"), {
-  type: "line",
-  data: {
-    labels,
-    datasets: [{
-      label: "Obsazenost",
-      data: values,
-      tension: 0.3
-    }]
-  },
+  const dayMap = {
+  1: "mon", 2: "tue", 3: "wed",
+  4: "thu", 5: "fri", 6: "sat", 0: "sun"
+  };
+
+  const buckets = {
+    mon: {}, tue: {}, wed: {}, thu: {}, fri: {}, sat: {}, sun: {}
+  };
+
+  for (const row of rows) {
+    const cols = row.split(",");
+    const d = new Date(cols[0]);
+    const day = dayMap[d.getDay()];
+    const dateKey = d.toISOString().slice(0,10);
+
+    buckets[day][dateKey] ??= [];
+    buckets[day][dateKey].push({
+      x: cols[0],
+      y: Number(cols[1])
+    });
+  }
+
+
+function draw(dayKey) {
+  const dates = Object.keys(buckets[dayKey]).sort();
+  if (!dates.length) return;
+
+  const lastDate = dates.at(-1);
+  const data = buckets[dayKey][lastDate];
+
+  new Chart(document.getElementById(dayKey), {
+    type: "line",
+    data: {
+      datasets: [{
+        label: lastDate,
+        data,
+        tension: 0.3
+      }]
+    },
     options: {
       scales: {
         x: {
           type: "time",
-          time: {
-            unit: "minute",
-            displayFormats: {
-              minute: "HH:mm"
-            }
-          },
-        min: "2026-01-11T09:00:00+01:00",
-        max: "2026-01-12T21:00:00+01:00"
-      },
+          min: lastDate + "T09:00:00",
+          max: lastDate + "T21:00:00",
+          time: { unit: "minute", displayFormats: { minute: "HH:mm" } }
+        },
         y: { min: 0, max: 30 }
       }
     }
   });
+}
+
+["mon","tue","wed","thu","fri","sat","sun"].forEach(draw);
+
 }
 
 loadCSV();
