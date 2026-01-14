@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
   <meta charset="UTF-8">
-  <title>Obsazenost sauny</title>
+  <title>Sauna bazen slovany</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
   <style>
@@ -11,7 +11,7 @@
 </head>
 <body>
 
-<h2>Obsazenost sauny</h2>
+<h2>Narvanost sauny bazen slovany</h2>
 <h3>Pondělí</h3><canvas id="mon"></canvas>
 <h3>Úterý</h3><canvas id="tue"></canvas>
 <h3>Středa</h3><canvas id="wed"></canvas>
@@ -80,8 +80,8 @@ function draw(dayKey) {
       scales: {
         x: {
           type: "time",
-          min: lastDate + "T09:00:00",
-          max: lastDate + "T21:00:00",
+          min: lastDate + "T08:30:00",
+          max: lastDate + "T21:30:00",
           time: { unit: "minute", displayFormats: { minute: "HH:mm" } }
         },
         y: { min: 0, max: 30 }
