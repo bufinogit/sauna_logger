@@ -15,13 +15,13 @@
 <h1>Průměrná narvanost sauny bazen slovany</h1>
 <div id="legend" style="display:flex; gap:10px;">
     <div style="background:#ffa000;width:30px;height:20px;"></div>
-    0–5
+    0-5
     <div style="background:#ff7c00;width:30px;height:20px;"></div>
-    6–15
+    6-15
     <div style="background:#ff6200;width:30px;height:20px;"></div>
-    16–25
+    16-25
     <div style="background:#ff2000;width:30px;height:20px;"></div>
-    26–30
+    26-30
 </div>
 <canvas id="heatmap"></canvas>
 <h3>Pondělí</h3>
@@ -116,10 +116,10 @@
     const days = ["Po","Út","St","Čt","Pá","So","Ne"];
     const heatData = [];
 
-      res = await fetch(CSV_data_avg);
-      text = await res.text();
+      const res_avg = await fetch(CSV_data_avg);
+      const text_avg = await res_avg.text();
 
-      const data_avg_rows = text.trim().split("\n").slice(1);
+      const data_avg_rows = text_avg.trim().split("\n").slice(1);
 
       for (const row of data_avg_rows) {
         const cols = row.split(",");
