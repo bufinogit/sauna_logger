@@ -1,173 +1,190 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <title>Sauna bazen slovany</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.3.0"></script>
-  <style>
-    body { font-family: sans-serif; max-width: 900px; margin: 40px auto; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Sauna bazen slovany</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.3.0"></script>
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: 40px auto; }
+    </style>
 </head>
 <body>
 
 <h1>Průměrná narvanost sauny bazen slovany</h1>
 <div id="legend" style="display:flex; gap:10px;">
-  <div style="background:#d9fdd3;width:30px;height:20px;"></div> 0–5
-  <div style="background:#9bdcff;width:30px;height:20px;"></div> 6–15
-  <div style="background:#ffd966;width:30px;height:20px;"></div> 16–25
-  <div style="background:#ff7f7f;width:30px;height:20px;"></div> 26–30
+    <div style="background:#ffa000;width:30px;height:20px;"></div>
+    0–5
+    <div style="background:#ff7c00;width:30px;height:20px;"></div>
+    6–15
+    <div style="background:#ff6200;width:30px;height:20px;"></div>
+    16–25
+    <div style="background:#ff2000;width:30px;height:20px;"></div>
+    26–30
 </div>
 <canvas id="heatmap"></canvas>
-<h3>Pondělí</h3><canvas id="mon"></canvas>
-<h3>Úterý</h3><canvas id="tue"></canvas>
-<h3>Středa</h3><canvas id="wed"></canvas>
-<h3>Čtvrtek</h3><canvas id="thu"></canvas>
-<h3>Pátek</h3><canvas id="fri"></canvas>
-<h3>Sobota</h3><canvas id="sat"></canvas>
-<h3>Neděle</h3><canvas id="sun"></canvas>
+<h3>Pondělí</h3>
+<canvas id="mon"></canvas>
+<h3>Úterý</h3>
+<canvas id="tue"></canvas>
+<h3>Středa</h3>
+<canvas id="wed"></canvas>
+<h3>Čtvrtek</h3>
+<canvas id="thu"></canvas>
+<h3>Pátek</h3>
+<canvas id="fri"></canvas>
+<h3>Sobota</h3>
+<canvas id="sat"></canvas>
+<h3>Neděle</h3>
+<canvas id="sun"></canvas>
 
 <script>
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTSROGuvLLP0EUzAKIGZm5cgk_amvP5YmS5AR4azjF9aRVfA4fJ4ghZCGGhIZI76HiJV69sb0Cb32Yb/pub?gid=0&single=true&output=csv";
+    const CSV_data = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTSROGuvLLP0EUzAKIGZm5cgk_amvP5YmS5AR4azjF9aRVfA4fJ4ghZCGGhIZI76HiJV69sb0Cb32Yb/pub?gid=0&single=true&output=csv";
+    const CSV_data_avg = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTSROGuvLLP0EUzAKIGZm5cgk_amvP5YmS5AR4azjF9aRVfA4fJ4ghZCGGhIZI76HiJV69sb0Cb32Yb/pub?gid=2098029931&single=true&output=csv";
 
-async function loadCSV() {
-  const res = await fetch(CSV_URL);
-  const text = await res.text();
+    async function loadCSV() {
+      const res = await fetch(CSV_data);
+      const text = await res.text();
 
-  const rows = text.trim().split("\n").slice(1);
-  const labels = [];
-  const values = [];
+      const data_rows = text.trim().split("\n").slice(1);
+      const labels = [];
+      const values = [];
 
-  for (const row of rows) {
-    const cols = row.split(",");
-    labels.push(cols[0]);      // time_ISO
-    values.push(Number(cols[1])); // occupancy
-  }
-
-  const dayMap = {
-  1: "mon", 2: "tue", 3: "wed",
-  4: "thu", 5: "fri", 6: "sat", 0: "sun"
-  };
-
-  const buckets = {
-    mon: {}, tue: {}, wed: {}, thu: {}, fri: {}, sat: {}, sun: {}
-  };
-
-  for (const row of rows) {
-    const cols = row.split(",");
-    const d = new Date(cols[0]);
-    const day = dayMap[d.getDay()];
-    const dateKey = d.toISOString().slice(0,10);
-
-    buckets[day][dateKey] ??= [];
-    buckets[day][dateKey].push({
-      x: cols[0],
-      y: Number(cols[1])
-    });
-  }
-
-
-function draw(dayKey) {
-  const dates = Object.keys(buckets[dayKey]).sort();
-  if (!dates.length) return;
-
-  const lastDate = dates.at(-1);
-  const data = buckets[dayKey][lastDate];
-
-  new Chart(document.getElementById(dayKey), {
-    type: "line",
-    data: {
-      datasets: [{
-        label: lastDate,
-        data,
-        tension: 0.3
-      }]
-    },
-    options: {
-      scales: {
-        x: {
-          type: "time",
-          min: lastDate + "T08:30:00",
-          max: lastDate + "T21:30:00",
-          time: { unit: "minute", displayFormats: { minute: "HH:mm" } }
-        },
-        y: { min: 0, max: 30 }
+      for (const row of data_rows) {
+        const cols = row.split(",");
+        labels.push(cols[0]);      // time_ISO
+        values.push(Number(cols[1])); // occupancy
       }
-    }
-  });
-}
-["mon","tue","wed","thu","fri","sat","sun"].forEach(draw);
+
+      const dayMap = {
+      1: "mon", 2: "tue", 3: "wed",
+      4: "thu", 5: "fri", 6: "sat", 0: "sun"
+      };
+
+      const buckets = {
+        mon: {}, tue: {}, wed: {}, thu: {}, fri: {}, sat: {}, sun: {}
+      };
+
+      for (const row of data_rows) {
+        const cols = row.split(",");
+        const d = new Date(cols[0]);
+        const day = dayMap[d.getDay()];
+        const dateKey = d.toISOString().slice(0,10);
+
+        buckets[day][dateKey] ??= [];
+        buckets[day][dateKey].push({
+          x: cols[0],
+          y: Number(cols[1])
+        });
+      }
 
 
-    // ===== HEATMAPA =====
-  const days = ["Po","Út","St","Čt","Pá","So","Ne"];
-  const heatData = [];
+    function draw(dayKey) {
+      const dates = Object.keys(buckets[dayKey]).sort();
+      if (!dates.length) return;
 
-  for (const row of rows) {
-    const cols = row.split(",");
+      const lastDate = dates.at(-1);
+      const data = buckets[dayKey][lastDate];
 
-    const day = cols[8]?.trim();   // Ne
-    const hour = Number(cols[9]);  // 9
-    const avg  = Number(cols[10]);  // 17
-
-    const y = days.indexOf(day);
-    if (y === -1 || isNaN(hour) || isNaN(avg)) continue;
-
-    heatData.push({
-      x: hour,
-      y: y,
-      v: avg
-    });
-  }
-
-  new Chart(document.getElementById("heatmap"), {
-    type: "matrix",
-    data: {
-      datasets: [{
-        label: "",
-        data: heatData,
-        width: 50,
-        height: 50,
-        backgroundColor(ctx) {
-          const v = ctx.raw.v;
-          if (v < 6) return "#d9fdd3";
-          if (v < 16) return "#9bdcff";
-          if (v < 26) return "#ffd966";
-          return "#ff7f7f";
-        }
-      }]
-    },
-    options: {
-      scales: {
-        x: {
-          type: "linear",
-          min: 8,
-          max: 21,
-          ticks: { stepSize: 1 },
-          title: { display: true, text: "Hodina" }
+      new Chart(document.getElementById(dayKey), {
+        type: "line",
+        data: {
+          datasets: [{
+            label: lastDate,
+            data,
+            tension: 0.3
+          }]
         },
-        y: {
-          type: "linear",
-          ticks: {
-            callback: v => days[v]
-          },
-          title: { display: true, text: "Den v týdnu" }
-        }
-      },
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: c =>
-              `${days[c.raw.y]} ${c.raw.x}:00 → ${c.raw.v} lidí`
+        options: {
+          scales: {
+            x: {
+              type: "time",
+              min: lastDate + "T08:30:00",
+              max: lastDate + "T21:30:00",
+              time: { unit: "minute", displayFormats: { minute: "HH:mm" } }
+            },
+            y: { min: 0, max: 30 }
           }
         }
-      }
+      });
     }
-  });
-}
+    ["mon","tue","wed","thu","fri","sat","sun"].forEach(draw);
 
-loadCSV();
+
+        // ===== HEATMAPA =====
+    const days = ["Po","Út","St","Čt","Pá","So","Ne"];
+    const heatData = [];
+
+      res = await fetch(CSV_data_avg);
+      text = await res.text();
+
+      const data_avg_rows = text.trim().split("\n").slice(1);
+
+      for (const row of data_avg_rows) {
+        const cols = row.split(",");
+
+        const day = cols[0]?.trim();   // Ne
+        const hour = Number(cols[1]);  // 9
+        const avg  = Number(cols[2]);  // 17
+
+        const y = days.indexOf(day);
+        if (y === -1 || isNaN(hour) || isNaN(avg)) continue;
+
+        heatData.push({
+          x: hour,
+          y: y,
+          v: avg
+        });
+      }
+
+      new Chart(document.getElementById("heatmap"), {
+        type: "matrix",
+        data: {
+          datasets: [{
+            label: "",
+            data: heatData,
+            width: 50,
+            height: 50,
+            backgroundColor(ctx) {
+              const v = ctx.raw.v;
+              if (v < 6) return "#d9fdd3";
+              if (v < 16) return "#9bdcff";
+              if (v < 26) return "#ffd966";
+              return "#ff7f7f";
+            }
+          }]
+        },
+        options: {
+          scales: {
+            x: {
+              type: "linear",
+              min: 8,
+              max: 21,
+              ticks: { stepSize: 1 },
+              title: { display: true, text: "Hodina" }
+            },
+            y: {
+              type: "linear",
+              ticks: {
+                callback: v => days[v]
+              },
+              title: { display: true, text: "Den v týdnu" }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: c =>
+                  `${days[c.raw.y]} ${c.raw.x}:00 → ${c.raw.v} lidí`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    loadCSV();
 </script>
 
 </body>
