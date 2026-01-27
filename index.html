@@ -40,8 +40,8 @@
 <canvas id="sun"></canvas>
 
 <script>
-    const CSV_data = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTSROGuvLLP0EUzAKIGZm5cgk_amvP5YmS5AR4azjF9aRVfA4fJ4ghZCGGhIZI76HiJV69sb0Cb32Yb/pub?gid=0&single=true&output=csv";
-    const CSV_data_avg = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTSROGuvLLP0EUzAKIGZm5cgk_amvP5YmS5AR4azjF9aRVfA4fJ4ghZCGGhIZI76HiJV69sb0Cb32Yb/pub?gid=2098029931&single=true&output=csv";
+    const CSV_data = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTSROGuvLLP0EUzAKIGZm5cgk_amvP5YmS5AR4azjF9aRVfA4fJ4ghZCGGhIZI76HiJV69sb0Cb32Yb/pub?gid=0&single=true&output=tsv";
+    const CSV_data_avg = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTSROGuvLLP0EUzAKIGZm5cgk_amvP5YmS5AR4azjF9aRVfA4fJ4ghZCGGhIZI76HiJV69sb0Cb32Yb/pub?gid=2098029931&single=true&output=tsv";
 
     async function loadCSV() {
       const res = await fetch(CSV_data);
@@ -52,7 +52,7 @@
       const values = [];
 
       for (const row of data_rows) {
-        const cols = row.split(",");
+        const cols = row.split("\t");
         labels.push(cols[0]);      // time_ISO
         values.push(Number(cols[1])); // occupancy
       }
@@ -122,7 +122,7 @@
       const data_avg_rows = text_avg.trim().split("\n").slice(1);
 
       for (const row of data_avg_rows) {
-        const cols = row.split(",");
+        const cols = row.split("\t");
 
         const day = cols[1]?.trim();   // Ne
         const hour = Number(cols[2]);  // 9
