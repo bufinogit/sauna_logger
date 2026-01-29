@@ -19,14 +19,31 @@
 <body>
 
   <h1>Průměrná narvanost sauny bazen slovany</h1>
-  <!--
-  <div id="legend" style="display:flex; gap:10px;">
-    <div style="background:#d9fdd3;width:30px;height:20px;"></div> 0-5
-    <div style="background:#9bdcff;width:30px;height:20px;"></div> 6-15
-    <div style="background:#ffd966;width:30px;height:20px;"></div> 16-25
-    <div style="background:#ff7f7f;width:30px;height:20px;"></div> 26-30
+  <div style="
+  width:300px;
+  height:15px;
+  margin-top:10px;
+  border-radius:6px;
+  background: linear-gradient(
+    to right,
+    hsl(120, 85%, 55%),  /* 0 lidí */
+    hsl(60, 85%, 55%),   /* ~15 lidí */
+    hsl(0, 85%, 55%)     /* 30 lidí */
+  );
+"></div>
+
+  <div style="
+  display:flex;
+  justify-content:space-between;
+  width:300px;
+  font-size:12px;
+  font-family:sans-serif;
+">
+    <span>0</span>
+    <span>15</span>
+    <span>30</span>
   </div>
--->
+
   <canvas id="heatmap"></canvas>
   <h3>Pondělí (Muži)</h3><canvas id="mon"></canvas>
   <h3>Úterý (Ženy -> 14:00)</h3><canvas id="tue"></canvas>
@@ -94,19 +111,20 @@
               data,
               tension: 0.4,
               borderColor: "#007bff",
-              backgroundColor: "#007bff",
-              pointRadius: 0,
-              borderWidth: 4
+              backgroundColor: "#90c4fc",
+              pointRadius: 8,
+              borderWidth: 4,
+              pointStyle: 'rectRounded'
             };
           } else {
             return {
               label: "",
               data,
               tension: 0.4,
-              borderColor: "#90c4fc",
-              backgroundColor: "#90c4fc",
+              borderColor: "#eb1f48",
+              backgroundColor: "#eb1f48",
               pointRadius: 0,
-              borderWidth: 1
+              borderWidth: 1.5
             };
           }
         });
@@ -150,53 +168,99 @@
       const rows_avg = text_avg.trim().split("\n").slice(1);
 
       const days = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
-      const hours = Array.from({ length: 14 }, (_, i) => i + 8); // 8-21
+      const hours = Array.from({ length: 13 }, (_, i) => i + 9); // 8–21
 
-      // Převod dat z TSV průměrů na formát pro Chart.js
-      const datasets = days.map((day, dayIdx) => {
-        const data = hours.map(h => {
-          // Najdi odpovídající řádek v rows_avg
+      // Najdeme min/max pro škálování barev
+      let minV = Infinity, maxV = -Infinity;
+      for (const row of rows_avg) {
+        const v = Number(row.split("\t")[2]);
+        if (!isNaN(v)) {
+          minV = Math.min(minV, v);
+          maxV = Math.max(maxV, v);
+        }
+      }
+
+      // funkce na barvu podle hodnoty
+      function getColor(v) {
+        const t = v / 30;          // 0–1
+        const hue = 120 - (120 * t); // 120 → 0
+        return `hsl(${hue}, 85%, 55%)`;
+      }
+
+      // vytvoření datasetů – každý dataset = 1 hodina
+      const datasets = hours.map(h => {
+        const data = days.map(day => {
           const row = rows_avg.find(r => {
             const [d, hourStr] = r.split("\t");
             return d.trim() === day && Number(hourStr) === h;
           });
-          return row ? Number(row.split("\t")[2]) : 0; // pokud chybí, nula
+          return row ? 1 : 1; // každý segment má stejnou šířku
         });
 
-        // Náhodná barva nebo zvolená paleta
-        const colors = ["#6082b6", "#f4ca16", "#dbd7d2", "#eb1f48", "#00a86b", "#8c564b", "#e377c2"];
+        const colors = days.map(day => {
+          const row = rows_avg.find(r => {
+            const [d, hourStr] = r.split("\t");
+            return d.trim() === day && Number(hourStr) === h;
+          });
+          const v = row ? Number(row.split("\t")[2]) : 0;
+          return getColor(v);
+        });
+
         return {
-          label: day,
+          label: `${h}:00`,
           data,
-          backgroundColor: colors[dayIdx],
+          backgroundColor: colors,
+          borderWidth: 0,
+          stack: "heat"
         };
       });
 
-      // Vykreslení clustered bar chart
       new Chart(document.getElementById("heatmap"), {
         type: "bar",
         data: {
-          labels: hours,
+          labels: days,
           datasets
         },
         options: {
+          indexAxis: "y", // otočí graf → řádky
           plugins: {
-            legend: { display: true }
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const day = ctx.label;
+                  const hour = ctx.dataset.label;
+                  const row = rows_avg.find(r => {
+                    const [d, h] = r.split("\t");
+                    return d.trim() === day && h === hour.replace(":00", "");
+                  });
+                  const v = row ? row.split("\t")[2] : "?";
+                  return `${day} ${hour} → ${v} lidí`;
+                }
+              }
+            }
           },
-          responsive: true,
           scales: {
             x: {
-              stacked: false,
-              title: { display: true, text: "Hodina" }
+              stacked: true,
+              min: 0,
+              max: hours.length,
+              ticks: {
+                stepSize: 1,
+                callback: (value) => {
+                  const h = hours[value];
+                  return h !== undefined ? `${h}:00` : "";
+                }
+              },
+              grid: { display: false }
             },
             y: {
-              stacked: false,
-              title: { display: true, text: "Průměrný počet lidí" },
-              beginAtZero: true
+              stacked: true,
             }
           }
         }
       });
+
 
     }
     loadCSV();
