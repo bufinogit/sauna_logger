@@ -62,6 +62,9 @@
       const buckets = {
         mon: {}, tue: {}, wed: {}, thu: {}, fri: {}, sat: {}, sun: {}
       };
+      const buckets = {
+        mon: {}, tue: {}, wed: {}, thu: {}, fri: {}, sat: {}, sun: {}
+      };
 
       for (const row of rows) {
         const cols = row.split("\t");
@@ -69,6 +72,12 @@
         const day = dayMap[d.getDay()];
         const dateKey = d.toISOString().slice(0, 10);
 
+        buckets[day][dateKey] ??= [];
+        buckets[day][dateKey].push({
+          x: cols[0],
+          y: Number(cols[1])
+        });
+      }
         buckets[day][dateKey] ??= [];
         buckets[day][dateKey].push({
           x: cols[0],
