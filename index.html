@@ -225,10 +225,10 @@
             label: "Naměřené hodnoty",
             data,
             tension: 0.4,
-            borderColor: "#eb1f48",
-            backgroundColor: "#eb1f48",
+            borderColor: "#eb637e",
+            backgroundColor: "#f2d8dd",
             pointRadius: 0,
-            borderWidth: 1.5,
+            borderWidth: 2,
             order: 1,
             isHistory: true
           };
@@ -238,13 +238,14 @@
           label: "Průměr",
           data: avgLines[dayKey],
           borderColor: "#007bff",
-          backgroundColor: "#90c4fc",
+          backgroundColor: "#cae2fc",
           borderWidth: 4,
           pointRadius: 8,
           tension: 0.4,
-          order: 0,   // bude nahoře
+          order: 2,   // bude nahoře
           pointStyle: 'rectRounded',
-          isAverage: true
+          isAverage: true,
+          fill: 'start'
         });
 
         new Chart(document.getElementById(dayKey), {
