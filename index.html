@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Sauna bazen slovany</title>
+  <title>Kdy nechodit do sauny..</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.3.0"></script>
@@ -18,11 +18,12 @@
 
 <body>
 
-  <h1>Průměrná narvanost sauny bazen slovany</h1>
+  <h1 style="text-align:center;">Průměrná namačkanost v sauně</h1>
   <div style="
   width:300px;
   height:15px;
   margin-top:10px;
+  margin:0 auto; 
   border-radius:6px;
   background: linear-gradient(
     to right,
@@ -38,6 +39,7 @@
   width:300px;
   font-size:12px;
   font-family:sans-serif;
+  margin:0 auto;
 ">
     <span>0</span>
     <span>15</span>
@@ -45,13 +47,13 @@
   </div>
 
   <canvas id="heatmap"></canvas>
-  <h3>Pondělí (Muži)</h3><canvas id="mon"></canvas>
-  <h3>Úterý (Ženy -> 14:00)</h3><canvas id="tue"></canvas>
-  <h3>Středa</h3><canvas id="wed"></canvas>
-  <h3>Čtvrtek (Ženy)</h3><canvas id="thu"></canvas>
-  <h3>Pátek</h3><canvas id="fri"></canvas>
-  <h3>Sobota</h3><canvas id="sat"></canvas>
-  <h3>Neděle</h3><canvas id="sun"></canvas>
+  <h3 style="text-align:center;">Pondělí (Muži)</h3><canvas id="mon"></canvas>
+  <h3 style="text-align:center;">Úterý (Ženy -> 14:00)</h3><canvas id="tue"></canvas>
+  <h3 style="text-align:center;">Středa</h3><canvas id="wed"></canvas>
+  <h3 style="text-align:center;">Čtvrtek (Ženy)</h3><canvas id="thu"></canvas>
+  <h3 style="text-align:center;">Pátek</h3><canvas id="fri"></canvas>
+  <h3 style="text-align:center;">Sobota</h3><canvas id="sat"></canvas>
+  <h3 style="text-align:center;">Neděle</h3><canvas id="sun"></canvas>
 
   <script>
     const TSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTSROGuvLLP0EUzAKIGZm5cgk_amvP5YmS5AR4azjF9aRVfA4fJ4ghZCGGhIZI76HiJV69sb0Cb32Yb/pub?gid=0&single=true&output=tsv";
@@ -67,7 +69,7 @@
       const rows_avg = text_avg.trim().split("\n").slice(1);
 
       const days = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
-      const hours = Array.from({ length: 12 }, (_, i) => i + 9); // 8–21
+      const hours = Array.from({ length: 12 }, (_, i) => i + 9); // 9–21
 
       // funkce na barvu podle hodnoty
       function getColor(v) {
