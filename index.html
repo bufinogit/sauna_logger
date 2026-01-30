@@ -58,6 +58,100 @@
     const TSV_AVG_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTSROGuvLLP0EUzAKIGZm5cgk_amvP5YmS5AR4azjF9aRVfA4fJ4ghZCGGhIZI76HiJV69sb0Cb32Yb/pub?gid=2098029931&single=true&output=tsv";
 
     async function loadCSV() {
+
+      // ===== HEATMAPA =====
+
+      // Načtení průměrů
+      const res_avg = await fetch(TSV_AVG_URL);
+      const text_avg = await res_avg.text();
+      const rows_avg = text_avg.trim().split("\n").slice(1);
+
+      const days = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
+      const hours = Array.from({ length: 12 }, (_, i) => i + 9); // 8–21
+
+      // funkce na barvu podle hodnoty
+      function getColor(v) {
+        const t = v / 30;          // 0–1
+        const hue = 120 - (120 * t); // 120 → 0
+        return `hsl(${hue}, 85%, 55%)`;
+      }
+
+      // vytvoření datasetů – každý dataset = 1 hodina
+      const datasets = hours.map(h => {
+        const data = days.map(day => {
+          const row = rows_avg.find(r => {
+            const [d, hourStr] = r.split("\t");
+            return d.trim() === day && Number(hourStr) === h;
+          });
+          return row ? 1 : 1; // každý segment má stejnou šířku
+        });
+
+        const colors = days.map(day => {
+          const row = rows_avg.find(r => {
+            const [d, hourStr] = r.split("\t");
+            return d.trim() === day && Number(hourStr) === h;
+          });
+          const v = row ? Number(row.split("\t")[2]) : 0;
+          return getColor(v);
+        });
+
+        return {
+          label: `${h}:00`,
+          data,
+          backgroundColor: colors,
+          borderWidth: 0,
+          stack: "heat"
+        };
+      });
+
+      new Chart(document.getElementById("heatmap"), {
+        type: "bar",
+        data: {
+          labels: days,
+          datasets
+        },
+        options: {
+          indexAxis: "y", // otočí graf → řádky
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const day = ctx.label;
+                  const hour = ctx.dataset.label;
+                  const row = rows_avg.find(r => {
+                    const [d, h] = r.split("\t");
+                    return d.trim() === day && h === hour.replace(":00", "");
+                  });
+                  const v = row ? row.split("\t")[2] : "?";
+                  return `${day} ${hour} → ${v} lidí`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              min: 0,
+              max: hours.length,
+              ticks: {
+                stepSize: 1,
+                callback: (value) => {
+                  const h = hours[value];
+                  return h !== undefined ? `${h}:00` : "";
+                }
+              },
+              grid: { display: false }
+            },
+            y: {
+              stacked: true,
+            }
+          }
+        }
+      });
+
+      // ===== DAY GRAPHS =====
+
       const res = await fetch(TSV_URL);
       const text = await res.text();
 
@@ -158,109 +252,6 @@
         });
       }
       ["mon", "tue", "wed", "thu", "fri", "sat", "sun"].forEach(draw);
-
-
-      // ===== HEATMAPA =====
-
-      // Načtení průměrů
-      const res_avg = await fetch(TSV_AVG_URL);
-      const text_avg = await res_avg.text();
-      const rows_avg = text_avg.trim().split("\n").slice(1);
-
-      const days = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
-      const hours = Array.from({ length: 13 }, (_, i) => i + 9); // 8–21
-
-      // Najdeme min/max pro škálování barev
-      let minV = Infinity, maxV = -Infinity;
-      for (const row of rows_avg) {
-        const v = Number(row.split("\t")[2]);
-        if (!isNaN(v)) {
-          minV = Math.min(minV, v);
-          maxV = Math.max(maxV, v);
-        }
-      }
-
-      // funkce na barvu podle hodnoty
-      function getColor(v) {
-        const t = v / 30;          // 0–1
-        const hue = 120 - (120 * t); // 120 → 0
-        return `hsl(${hue}, 85%, 55%)`;
-      }
-
-      // vytvoření datasetů – každý dataset = 1 hodina
-      const datasets = hours.map(h => {
-        const data = days.map(day => {
-          const row = rows_avg.find(r => {
-            const [d, hourStr] = r.split("\t");
-            return d.trim() === day && Number(hourStr) === h;
-          });
-          return row ? 1 : 1; // každý segment má stejnou šířku
-        });
-
-        const colors = days.map(day => {
-          const row = rows_avg.find(r => {
-            const [d, hourStr] = r.split("\t");
-            return d.trim() === day && Number(hourStr) === h;
-          });
-          const v = row ? Number(row.split("\t")[2]) : 0;
-          return getColor(v);
-        });
-
-        return {
-          label: `${h}:00`,
-          data,
-          backgroundColor: colors,
-          borderWidth: 0,
-          stack: "heat"
-        };
-      });
-
-      new Chart(document.getElementById("heatmap"), {
-        type: "bar",
-        data: {
-          labels: days,
-          datasets
-        },
-        options: {
-          indexAxis: "y", // otočí graf → řádky
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: ctx => {
-                  const day = ctx.label;
-                  const hour = ctx.dataset.label;
-                  const row = rows_avg.find(r => {
-                    const [d, h] = r.split("\t");
-                    return d.trim() === day && h === hour.replace(":00", "");
-                  });
-                  const v = row ? row.split("\t")[2] : "?";
-                  return `${day} ${hour} → ${v} lidí`;
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              stacked: true,
-              min: 0,
-              max: hours.length,
-              ticks: {
-                stepSize: 1,
-                callback: (value) => {
-                  const h = hours[value];
-                  return h !== undefined ? `${h}:00` : "";
-                }
-              },
-              grid: { display: false }
-            },
-            y: {
-              stacked: true,
-            }
-          }
-        }
-      });
-
 
     }
     loadCSV();
