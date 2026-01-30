@@ -165,6 +165,28 @@
         values.push(Number(cols[1])); // occupancy
       }
 
+      const avgLines = {
+        mon: [], tue: [], wed: [], thu: [], fri: [], sat: [], sun: []
+      };
+
+      for (const row of rows_avg) {
+        const cols = row.split("\t");
+
+        const dayCZ = cols[0]?.trim();  // Po, Út...
+        const hour = Number(cols[1]);
+        const avg = Number(cols[2]);
+
+        const map = { "Po": "mon", "Út": "tue", "St": "wed", "Čt": "thu", "Pá": "fri", "So": "sat", "Ne": "sun" };
+        const dayKey = map[dayCZ];
+
+        if (!dayKey || isNaN(hour) || isNaN(avg)) continue;
+
+        avgLines[dayKey].push({
+          x: hour,   // střed bloku (stejně jako osa)
+          y: avg
+        });
+      }
+
       const dayMap = {
         1: "mon", 2: "tue", 3: "wed",
         4: "thu", 5: "fri", 6: "sat", 0: "sun"
@@ -199,28 +221,30 @@
             return { x: hour, y: d.y };
           });
 
-          if (i === dates.length - 1) {
-            return {
-              label: date,
-              data,
-              tension: 0.4,
-              borderColor: "#007bff",
-              backgroundColor: "#90c4fc",
-              pointRadius: 8,
-              borderWidth: 4,
-              pointStyle: 'rectRounded'
-            };
-          } else {
-            return {
-              label: "",
-              data,
-              tension: 0.4,
-              borderColor: "#eb1f48",
-              backgroundColor: "#eb1f48",
-              pointRadius: 0,
-              borderWidth: 1.5
-            };
-          }
+          return {
+            label: "Naměřené hodnoty",
+            data,
+            tension: 0.4,
+            borderColor: "#eb1f48",
+            backgroundColor: "#eb1f48",
+            pointRadius: 0,
+            borderWidth: 1.5,
+            order: 1,
+            isHistory: true
+          };
+        });
+
+        datasets.push({
+          label: "Průměr",
+          data: avgLines[dayKey],
+          borderColor: "#007bff",
+          backgroundColor: "#90c4fc",
+          borderWidth: 4,
+          pointRadius: 8,
+          tension: 0.4,
+          order: 0,   // bude nahoře
+          pointStyle: 'rectRounded',
+          isAverage: true
         });
 
         new Chart(document.getElementById(dayKey), {
@@ -229,27 +253,42 @@
           options: {
             plugins: {
               legend: {
-                display: false
-              }
-            },
-            scales: {
-              x: {
-                type: "linear",
-                min: 8.5,   // 08:30
-                max: 21.5,  // 21:30
-                ticks: {
-                  stepSize: 1,
-                  callback: v => {
-                    const h = Math.floor(v);
-                    const m = Math.round((v - h) * 60);
-                    return `${h}:${m.toString().padStart(2, "0")}`;
+                  display: true,
+                  labels: {
+                    filter: function (item, chart) {
+                      const ds = chart.datasets[item.datasetIndex];
+
+                      // zobraz jen první šedý a průměr
+                      if (ds.isAverage) return true;
+
+                      if (ds.isHistory) {
+                        // jen první historický dataset
+                        return item.datasetIndex === chart.datasets.findIndex(d => d.isHistory);
+                      }
+
+                      return false;
+                    }
                   }
-                }
+              }
               },
-              y: { min: 0, max: 30 }
+              scales: {
+                x: {
+                  type: "linear",
+                  min: 8.5,   // 08:30
+                  max: 21.5,  // 21:30
+                  ticks: {
+                    stepSize: 1,
+                    callback: v => {
+                      const h = Math.floor(v);
+                      const m = Math.round((v - h) * 60);
+                      return `${h}:${m.toString().padStart(2, "0")}`;
+                    }
+                  }
+                },
+                y: { min: 0, max: 30 }
+              }
             }
-          }
-        });
+          });
       }
       ["mon", "tue", "wed", "thu", "fri", "sat", "sun"].forEach(draw);
 
